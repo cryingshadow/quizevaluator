@@ -49,10 +49,13 @@ public class ResultsByQuizMasterAndParticipant extends LinkedHashMap<String, Map
     public ResultsByQuizMasterAndParticipant(
         final SolutionsByQuizMaster solutionsByQuizMaster,
         final AnswersByQuizMasterAndParticipant answersByQuizMasterAndParticipant
-    ) {
+    ) throws IOException {
         for (final String quizMaster : answersByQuizMasterAndParticipant.keySet()) {
             final Map<String, Integer> resultsByParticipant = new LinkedHashMap<String, Integer>();
             final Map<Integer, Integer> solution = solutionsByQuizMaster.get(quizMaster);
+            if (solution == null) {
+                throw new IOException("No solution found for quizmaster '" + quizMaster + "'");
+            }
             final Map<String, Map<Integer, Integer>> answersByParticipant =
                 answersByQuizMasterAndParticipant.get(quizMaster);
             for (final String participant : answersByParticipant.keySet()) {

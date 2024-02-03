@@ -11,13 +11,13 @@ class ResultsByQuizMasterAndParticipantTest {
     void outputTest() throws IOException {
         final AnswersByQuizMasterAndParticipant answers = new AnswersByQuizMasterAndParticipant();
         try (BufferedReader reader = new BufferedReader(new StringReader(Data.ANSWER2))) {
-            answers.parseAnswers(reader);
+            answers.parseAnswers(reader, "dummyfile");
         }
         try (BufferedReader reader = new BufferedReader(new StringReader(Data.ANSWER3))) {
-            answers.parseAnswers(reader);
+            answers.parseAnswers(reader, "dummyfile");
         }
         try (BufferedReader reader = new BufferedReader(new StringReader(Data.ANSWER1))) {
-            answers.parseAnswers(reader);
+            answers.parseAnswers(reader, "dummyfile");
         }
         final StringWriter output = new StringWriter();
         try (
