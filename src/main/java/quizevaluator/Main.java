@@ -44,6 +44,11 @@ public class Main {
         try (BufferedReader solutionReader = new BufferedReader(new FileReader(file))) {
             return new SolutionsByQuizMaster(solutionReader);
         }
+        catch (Exception e) {
+            System.err.println("Error while parsing solution file: " + e.getMessage() + "\nExiting...");
+            System.exit(1);
+            return null; // needed for compiler
+        }
     }
 
     private static void plausibilityCheck(SolutionsByQuizMaster solutionsByQuiz, AnswersByQuizMasterAndParticipant answersByQuiz) {
