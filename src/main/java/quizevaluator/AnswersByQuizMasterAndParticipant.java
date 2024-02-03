@@ -25,7 +25,7 @@ public class AnswersByQuizMasterAndParticipant extends LinkedHashMap<String, Map
         super(map);
     }
 
-    public void parseAnswers(final BufferedReader reader) throws IOException {
+    public void parseAnswers(final BufferedReader reader, final String file) throws IOException {
         final String key = reader.readLine().trim();
         final Map<String, Map<Integer, Integer>> answersByTest = new LinkedHashMap<String, Map<Integer, Integer>>();
         String line = reader.readLine();
@@ -36,11 +36,12 @@ public class AnswersByQuizMasterAndParticipant extends LinkedHashMap<String, Map
             }
             final String[] nameAndAnswers = line.split(";");
             if (nameAndAnswers.length < 2) {
+                System.out.println("Warning for file " + file + ": Line does not have semicolon. Ignoring... Line:\n" + line);
                 line = reader.readLine();
                 continue;
             }
             if (nameAndAnswers.length > 2) {
-                throw new IOException("Format not ok - more than one semicolon in a line!");
+                throw new IOException("Format not ok - more than one semicolon in a line! Line:\n" + line);
             }
             final Map<Integer, Integer> answers = new LinkedHashMap<Integer, Integer>();
             for (final String answer : nameAndAnswers[1].split(",")) {
