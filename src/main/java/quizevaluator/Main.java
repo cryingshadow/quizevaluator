@@ -64,7 +64,7 @@ public class Main {
         var participantsNotInQuizmasters = Sets.difference(allParticipants, solutionsByQuiz.keySet());
 
         if (quizmastersNotInParticipants.isEmpty() && participantsNotInQuizmasters.isEmpty()) {
-            System.out.println("No problems found.");
+            System.out.println("Sets of quizmasters and participants are equal - looks good to me!");
         } else {
             System.out.println("Quizmasters not in participants: " + quizmastersNotInParticipants);
             System.out.println("Participants not in quizmasters: " + participantsNotInQuizmasters);
