@@ -60,10 +60,14 @@ public class Main {
                 + "file for the output!\nYou may additionally specify an evaluation mode (old/new)."
             );
         }
+        final FormsExcelToCsvConverter excelConverter = new FormsExcelToCsvConverter();
         final SolutionsByQuizMaster solutionsByQuizMaster = Main.parseSolutions(args[0]);
         final AnswerDataByQuizMasterAndParticipant answerDataByQuizMasterAndParticipant =
             new AnswerDataByQuizMasterAndParticipant();
-        for (final File file : new File(args[1]).listFiles()) {
+        for (File file : new File(args[1]).listFiles()) {
+            if (excelConverter.isExcelFile(file)) {
+                file = excelConverter.convert(file);
+            }
             try (BufferedReader answersReader = new BufferedReader(new FileReader(file))) {
                 answerDataByQuizMasterAndParticipant.parseAnswers(answersReader, solutionsByQuizMaster);
             }
