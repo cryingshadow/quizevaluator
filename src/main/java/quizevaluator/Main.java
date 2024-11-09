@@ -70,6 +70,8 @@ public class Main {
             }
             try (BufferedReader answersReader = new BufferedReader(new FileReader(file))) {
                 answerDataByQuizMasterAndParticipant.parseAnswers(answersReader, solutionsByQuizMaster);
+            } catch (RuntimeException | IOException e) {
+                throw new IOException("Error in file " + file.getAbsolutePath(), e);
             }
         }
         final boolean newMode = args.length == 4 ? args[3].toLowerCase().equals("new") : false;
