@@ -4,7 +4,7 @@ import quizevaluator.*;
 
 public class ModernBonusForParticipantEvaluation implements Evaluation {
 
-    private static final BonusCalculation[] CALCULATIONS =
+    public static final BonusCalculation[] CALCULATIONS =
         new BonusCalculation[] {
             new BonusCalculation(
                 (results, name) -> (int)PointsPercentageForParticipantEvaluation.pointsPercentage(results, name),

@@ -57,7 +57,7 @@ public class Main {
         if (args == null || args.length < 3 || args.length > 4) {
             throw new IllegalArgumentException(
                 "You must provide a file with correct answers, a diectory with files containing given answers, and a "
-                + "file for the output!\nYou may additionally specify an evaluation mode (old/new)."
+                + "file for the output!\nYou may additionally specify an execution mode (old/new/full)."
             );
         }
         final FormsExcelToCsvConverter excelConverter = new FormsExcelToCsvConverter();
@@ -74,24 +74,73 @@ public class Main {
                 throw new IOException("Error in file " + file.getAbsolutePath(), e);
             }
         }
-        final boolean newMode = args.length == 4 ? args[3].toLowerCase().equals("new") : false;
+        final ExecutionMode mode = args.length == 4 ? ExecutionMode.from(args[3]) : ExecutionMode.FULL;
         final ResultsByQuizMasterAndParticipant results =
             new ResultsByQuizMasterAndParticipant(
                 answerDataByQuizMasterAndParticipant,
-                newMode ? new ModernMCResultComputation() : new OldSchoolMCResultComputation()
+                Main.selectResultComputation(mode)
             );
+        final List<Evaluation> quizMasterEvaluation = Main.selectQuizMasterEvaluation(mode);
+        final List<Evaluation> participantsEvaluation = Main.selectParticipantsEvaluation(mode);
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(args[2]))) {
-            new CSVWriter(writer).writeCSV(
-                results,
-                newMode ? Main.QUIZ_MASTER_EVALUATIONS_NEW : Main.QUIZ_MASTER_EVALUATIONS_OLD,
-                newMode ? Main.PARTICIPANTS_EVALUATIONS_NEW : Main.PARTICIPANTS_EVALUATIONS_OLD
-            );
+            new CSVWriter(writer).writeCSV(results, quizMasterEvaluation, participantsEvaluation);
+        }
+        if (mode == ExecutionMode.FULL) {
+            for (
+                final File protocol :
+                    new File(args[0]).getAbsoluteFile().toPath().getParent().resolve("protocols").toFile().listFiles()
+            ) {
+                if (protocol.getName().endsWith(".tex")) {
+                    new ProtocolUpdater(
+                        protocol.toPath(),
+                        results,
+                        quizMasterEvaluation,
+                        participantsEvaluation
+                    ).updateProtocol();
+                }
+            }
         }
     }
 
     private static SolutionsByQuizMaster parseSolutions(final String file) throws IOException {
         try (BufferedReader solutionReader = new BufferedReader(new FileReader(file))) {
             return new SolutionsByQuizMaster(solutionReader);
+        }
+    }
+
+    private static List<Evaluation> selectParticipantsEvaluation(final ExecutionMode mode) {
+        switch (mode) {
+        case OLD:
+            return Main.PARTICIPANTS_EVALUATIONS_OLD;
+        case NEW:
+        case FULL:
+            return Main.PARTICIPANTS_EVALUATIONS_NEW;
+        default:
+            throw new IllegalStateException("New execution mode without complete implementation detected!");
+        }
+    }
+
+    private static List<Evaluation> selectQuizMasterEvaluation(final ExecutionMode mode) {
+        switch (mode) {
+        case OLD:
+            return Main.QUIZ_MASTER_EVALUATIONS_OLD;
+        case NEW:
+        case FULL:
+            return Main.QUIZ_MASTER_EVALUATIONS_NEW;
+        default:
+            throw new IllegalStateException("New execution mode without complete implementation detected!");
+        }
+    }
+
+    private static ResultComputation selectResultComputation(final ExecutionMode mode) {
+        switch (mode) {
+        case OLD:
+            return new OldSchoolMCResultComputation();
+        case NEW:
+        case FULL:
+            return new ModernMCResultComputation();
+        default:
+            throw new IllegalStateException("New execution mode without complete implementation detected!");
         }
     }
 
