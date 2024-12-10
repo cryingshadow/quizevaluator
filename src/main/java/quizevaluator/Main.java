@@ -13,9 +13,9 @@ public class Main {
             new PointsPercentageForParticipantEvaluation(),
             new Passed6CountForParticipantEvaluation(),
             new Passed6PercentageForParticipantEvaluation(),
-            new Passed8CountForParticipantEvaluation(),
-            new Passed8PercentageForParticipantEvaluation(),
-            new BonusForParticipantEvaluation()
+            new Passed9CountForParticipantEvaluation(),
+            new Passed9PercentageForParticipantEvaluation(),
+            new ModernBonusForParticipantEvaluation()
         );
 
     static final List<Evaluation> PARTICIPANTS_EVALUATIONS_OLD =
@@ -36,8 +36,8 @@ public class Main {
             new Passed6CountForQuizMasterEvaluation(),
             new Passed6PercentageForQuizMasterEvaluation(),
             new Passed6TotalForQuizMasterEvaluation(),
-            new Passed8CountForQuizMasterEvaluation(),
-            new Passed8PercentageForQuizMasterEvaluation(),
+            new Passed9CountForQuizMasterEvaluation(),
+            new Passed9PercentageForQuizMasterEvaluation(),
             new ModernBonusForQuizMasterEvaluation()
         );
 
