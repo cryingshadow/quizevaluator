@@ -109,7 +109,7 @@ public class ProtocolUpdater {
         if ((percentage % 1) == 0) {
             return String.valueOf((int)percentage);
         }
-        return String.format("%.1f", percentage);
+        return String.format(Locale.US, "%.1f", percentage);
     }
 
 }
