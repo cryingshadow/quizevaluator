@@ -1,7 +1,5 @@
 package quizevaluator.evaluations;
 
-import quizevaluator.*;
-
 public class BonusForParticipantEvaluation implements Evaluation {
 
     private static final BonusCalculation[] CALCULATIONS =

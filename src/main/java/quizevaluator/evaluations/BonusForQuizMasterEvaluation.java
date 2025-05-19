@@ -1,37 +1,35 @@
 package quizevaluator.evaluations;
 
-import quizevaluator.*;
-
 public class BonusForQuizMasterEvaluation implements Evaluation {
 
     private static final BonusCalculation[] CALCULATIONS =
         new BonusCalculation[] {
             new BonusCalculation(
-                (results, name) -> (int)PointsPercentageForQuizMasterEvaluation.pointsPercentage(results, name),
+                data -> (int)PointsPercentageForQuizMasterEvaluation.pointsPercentage(data),
                 75
             ),
             new BonusCalculation(
-                (results, name) -> (int)Passed5PercentageForQuizMasterEvaluation.passedPercentage(results, name),
+                data -> (int)Passed5PercentageForQuizMasterEvaluation.passedPercentage(data),
                 100
             ),
             new BonusCalculation(
-                (results, name) -> (int)Passed8PercentageForQuizMasterEvaluation.passedPercentage(results, name),
+                data -> (int)Passed8PercentageForQuizMasterEvaluation.passedPercentage(data),
                 80
             )
         };
 
-    private static int bonus(final ResultsByQuizMasterAndParticipant results, final String name) {
-        return BonusCalculation.bonus(results, name, BonusForQuizMasterEvaluation.CALCULATIONS);
+    private static int bonus(final ResultData data) {
+        return BonusCalculation.bonus(data, BonusForQuizMasterEvaluation.CALCULATIONS);
     }
 
     @Override
-    public String cellText(final ResultsByQuizMasterAndParticipant results, final String name) {
-        return String.valueOf(BonusForQuizMasterEvaluation.bonus(results, name));
+    public String cellText(final ResultData data) {
+        return String.valueOf(BonusForQuizMasterEvaluation.bonus(data));
     }
 
     @Override
-    public Integer evaluation(final ResultsByQuizMasterAndParticipant results, final String name) {
-        return BonusForQuizMasterEvaluation.bonus(results, name);
+    public Integer evaluation(final ResultData data) {
+        return BonusForQuizMasterEvaluation.bonus(data);
     }
 
     @Override

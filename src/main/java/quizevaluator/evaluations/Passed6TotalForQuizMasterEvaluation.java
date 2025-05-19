@@ -1,25 +1,23 @@
 package quizevaluator.evaluations;
 
-import quizevaluator.*;
-
 public class Passed6TotalForQuizMasterEvaluation implements Evaluation {
 
-    private static int passedTotal(final ResultsByQuizMasterAndParticipant results, final String name) {
-        if (Passed6CountForQuizMasterEvaluation.passedCount(results, name) == 0) {
+    private static int passedTotal(final ResultData data) {
+        if (Passed6CountForQuizMasterEvaluation.passedCount(data) == 0) {
             return 0;
         }
-        final int passedPercentage = (int)Passed6PercentageForQuizMasterEvaluation.passedPercentage(results, name);
+        final int passedPercentage = (int)Passed6PercentageForQuizMasterEvaluation.passedPercentage(data);
         return Math.min(10, (passedPercentage / 10) + 1);
     }
 
     @Override
-    public String cellText(final ResultsByQuizMasterAndParticipant results, final String name) {
-        return String.valueOf(Passed6TotalForQuizMasterEvaluation.passedTotal(results, name));
+    public String cellText(final ResultData data) {
+        return String.valueOf(Passed6TotalForQuizMasterEvaluation.passedTotal(data));
     }
 
     @Override
-    public Integer evaluation(final ResultsByQuizMasterAndParticipant results, final String name) {
-        return Passed6TotalForQuizMasterEvaluation.passedTotal(results, name);
+    public Integer evaluation(final ResultData data) {
+        return Passed6TotalForQuizMasterEvaluation.passedTotal(data);
     }
 
     @Override

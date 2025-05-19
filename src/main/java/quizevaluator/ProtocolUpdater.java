@@ -37,13 +37,14 @@ public class ProtocolUpdater {
         if (student == null) {
             return;
         }
-        final String passedPercentage = this.calculatePassedPercentage(student);
-        final String bonusQuizMaster1 = this.calculateBonusQuizMaster1(student);
-        final String bonusQuizMaster2 = this.calculateBonusQuizMaster2(student);
-        final String bonusQuizMaster3 = this.calculateBonusQuizMaster3(student);
-        final String bonusParticipant1 = this.calculateBonusParticipant1(student);
-        final String bonusParticipant2 = this.calculateBonusParticipant2(student);
-        final String bonusParticipant3 = this.calculateBonusParticipant3(student);
+        final int excused = 0;
+        final String passedPercentage = this.calculatePassedPercentage(student, excused);
+        final String bonusQuizMaster1 = this.calculateBonusQuizMaster1(student, excused);
+        final String bonusQuizMaster2 = this.calculateBonusQuizMaster2(student, excused);
+        final String bonusQuizMaster3 = this.calculateBonusQuizMaster3(student, excused);
+        final String bonusParticipant1 = this.calculateBonusParticipant1(student, excused);
+        final String bonusParticipant2 = this.calculateBonusParticipant2(student, excused);
+        final String bonusParticipant3 = this.calculateBonusParticipant3(student, excused);
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(this.protocolPath.toFile()))) {
             for (final String line : content) {
                 switch (line) {
@@ -76,39 +77,55 @@ public class ProtocolUpdater {
         }
     }
 
-    private String applyBonusCalculation(final String student, final int excused, final BonusCalculation calculation) {
-        return
-            calculation.calculation().apply(new ResultData(this.results, student, excused)) >= calculation.threshold() ?
-                "1" :
-                    "0";
+    private String applyBonusCalculation(final ResultData data, final BonusCalculation calculation) {
+        return calculation.calculation().apply(data) >= calculation.threshold() ? "1" : "0";
     }
 
-    private String calculateBonusParticipant1(final String student) {
-        return this.applyBonusCalculation(student, ModernBonusForParticipantEvaluation.CALCULATIONS[0]);
+    private String calculateBonusParticipant1(final String student, final int excused) {
+        return this.applyBonusCalculation(
+            new ResultData(this.results, student, excused),
+            ModernBonusForParticipantEvaluation.CALCULATIONS[0]
+        );
     }
 
-    private String calculateBonusParticipant2(final String student) {
-        return this.applyBonusCalculation(student, ModernBonusForParticipantEvaluation.CALCULATIONS[1]);
+    private String calculateBonusParticipant2(final String student, final int excused) {
+        return this.applyBonusCalculation(
+            new ResultData(this.results, student, excused),
+            ModernBonusForParticipantEvaluation.CALCULATIONS[1]
+        );
     }
 
-    private String calculateBonusParticipant3(final String student) {
-        return this.applyBonusCalculation(student, ModernBonusForParticipantEvaluation.CALCULATIONS[2]);
+    private String calculateBonusParticipant3(final String student, final int excused) {
+        return this.applyBonusCalculation(
+            new ResultData(this.results, student, excused),
+            ModernBonusForParticipantEvaluation.CALCULATIONS[2]
+        );
     }
 
-    private String calculateBonusQuizMaster1(final String student) {
-        return this.applyBonusCalculation(student, ModernBonusForQuizMasterEvaluation.CALCULATIONS[0]);
+    private String calculateBonusQuizMaster1(final String student, final int excused) {
+        return this.applyBonusCalculation(
+            new ResultData(this.results, student, excused),
+            ModernBonusForQuizMasterEvaluation.CALCULATIONS[0]
+        );
     }
 
-    private String calculateBonusQuizMaster2(final String student) {
-        return this.applyBonusCalculation(student, ModernBonusForQuizMasterEvaluation.CALCULATIONS[1]);
+    private String calculateBonusQuizMaster2(final String student, final int excused) {
+        return this.applyBonusCalculation(
+            new ResultData(this.results, student, excused),
+            ModernBonusForQuizMasterEvaluation.CALCULATIONS[1]
+        );
     }
 
-    private String calculateBonusQuizMaster3(final String student) {
-        return this.applyBonusCalculation(student, ModernBonusForQuizMasterEvaluation.CALCULATIONS[2]);
+    private String calculateBonusQuizMaster3(final String student, final int excused) {
+        return this.applyBonusCalculation(
+            new ResultData(this.results, student, excused),
+            ModernBonusForQuizMasterEvaluation.CALCULATIONS[2]
+        );
     }
 
-    private String calculatePassedPercentage(final String student) {
-        final double percentage = Passed6PercentageForQuizMasterEvaluation.passedPercentage(this.results, student);
+    private String calculatePassedPercentage(final String student, final int excused) {
+        final double percentage =
+            Passed6PercentageForQuizMasterEvaluation.passedPercentage(new ResultData(this.results, student, excused));
         if ((percentage % 1) == 0) {
             return String.valueOf((int)percentage);
         }

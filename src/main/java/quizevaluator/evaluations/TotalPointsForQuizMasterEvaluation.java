@@ -1,20 +1,18 @@
 package quizevaluator.evaluations;
 
-import quizevaluator.*;
-
 public class TotalPointsForQuizMasterEvaluation implements Evaluation {
 
-    public static int totalPoints(final ResultsByQuizMasterAndParticipant results, final String name) {
-        return results.get(name).values().stream().mapToInt(Integer::intValue).sum();
+    public static int totalPoints(final ResultData data) {
+        return data.results().get(data.name()).values().stream().mapToInt(Integer::intValue).sum();
     }
 
     @Override
-    public String cellText(final ResultsByQuizMasterAndParticipant results, final String name) {
-        return String.valueOf(TotalPointsForQuizMasterEvaluation.totalPoints(results, name));
+    public String cellText(final ResultData data) {
+        return String.valueOf(TotalPointsForQuizMasterEvaluation.totalPoints(data));
     }
 
     @Override
-    public Integer evaluation(final ResultsByQuizMasterAndParticipant results, final String name) {
+    public Integer evaluation(final ResultData data) {
         return 0;
     }
 
