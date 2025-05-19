@@ -76,8 +76,11 @@ public class ProtocolUpdater {
         }
     }
 
-    private String applyBonusCalculation(final String student, final BonusCalculation calculation) {
-        return calculation.calculation().apply(this.results, student) >= calculation.threshold() ? "1" : "0";
+    private String applyBonusCalculation(final String student, final int excused, final BonusCalculation calculation) {
+        return
+            calculation.calculation().apply(new ResultData(this.results, student, excused)) >= calculation.threshold() ?
+                "1" :
+                    "0";
     }
 
     private String calculateBonusParticipant1(final String student) {

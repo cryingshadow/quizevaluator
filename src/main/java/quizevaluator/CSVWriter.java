@@ -31,6 +31,7 @@ public class CSVWriter {
         for (final Evaluation participantEvaluation : participantEvaluations) {
             participantTitles.add(participantEvaluation.title());
         }
+        final int excused = 0;
         for (final String name : names) {
             this.writer.write(';');
             this.writer.write(name);
@@ -40,22 +41,22 @@ public class CSVWriter {
             for (final Evaluation quizMasterEvaluation : quizMasterEvaluations) {
                 cellsByQuizMasterAndTitle.get(name).put(
                     quizMasterEvaluation.title(),
-                    quizMasterEvaluation.cellText(resultsByQuizMasterAndParticipant, name)
+                    quizMasterEvaluation.cellText(new ResultData(resultsByQuizMasterAndParticipant, name, excused))
                 );
                 totalPointsByName.put(
                     name,
                     totalPointsByName.get(name)
-                    + quizMasterEvaluation.evaluation(resultsByQuizMasterAndParticipant, name)
+                    + quizMasterEvaluation.evaluation(new ResultData(resultsByQuizMasterAndParticipant, name, excused))
                 );
             }
             for (final Evaluation participantEvaluation : participantEvaluations) {
                 participantCells.get(name).add(
-                    participantEvaluation.cellText(resultsByQuizMasterAndParticipant, name)
+                    participantEvaluation.cellText(new ResultData(resultsByQuizMasterAndParticipant, name, excused))
                 );
                 totalPointsByName.put(
                     name,
                     totalPointsByName.get(name)
-                    + participantEvaluation.evaluation(resultsByQuizMasterAndParticipant, name)
+                    + participantEvaluation.evaluation(new ResultData(resultsByQuizMasterAndParticipant, name, excused))
                 );
             }
         }
