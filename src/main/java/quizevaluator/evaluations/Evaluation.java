@@ -1,5 +1,6 @@
 package quizevaluator.evaluations;
 
+import java.util.*;
 import java.util.function.*;
 
 public interface Evaluation {
@@ -20,7 +21,18 @@ public interface Evaluation {
         final ResultData data,
         final int passLimit
     ) {
-        return data.results().get(data.name()).values().stream().mapToInt(points -> points >= passLimit ? 1 : 0).sum();
+        if (!data.results().containsKey(data.name())) {
+            System.out.print("No data found for ");
+            System.out.print(data.name());
+            System.out.println("!");
+        }
+        return data
+            .results()
+            .getOrDefault(data.name(), Collections.emptyMap())
+            .values()
+            .stream()
+            .mapToInt(points -> points >= passLimit ? 1 : 0)
+            .sum();
     }
 
     public static double passedPercentageParticipant(
@@ -37,7 +49,12 @@ public interface Evaluation {
         final Function<ResultData, Integer> countFunction
     ) {
         final double passedTimes100 = countFunction.apply(data) * 100;
-        final int total = data.results().get(data.name()).size();
+        if (!data.results().containsKey(data.name())) {
+            System.out.print("No data found for ");
+            System.out.print(data.name());
+            System.out.println("!");
+        }
+        final int total = data.results().getOrDefault(data.name(), Collections.emptyMap()).size();
         return passedTimes100 / total;
     }
 
