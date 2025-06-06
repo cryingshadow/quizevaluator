@@ -1,8 +1,12 @@
 package quizevaluator;
 
 import java.io.*;
+import java.lang.reflect.*;
+import java.nio.file.*;
 import java.util.*;
+import java.util.stream.*;
 
+import clit.*;
 import quizevaluator.evaluations.*;
 
 public class Main {
@@ -53,18 +57,33 @@ public class Main {
             new BonusForQuizMasterEvaluation()
         );
 
-    public static void main(final String[] args) throws IOException {
-        if (args == null || args.length < 3 || args.length > 4) {
-            throw new IllegalArgumentException(
-                "You must provide a file with correct answers, a diectory with files containing given answers, and a "
-                + "file for the output!\nYou may additionally specify an execution mode (old/new/full)."
-            );
+    private static final Collection<Set<Flag>> ALLOWED_COMBINATIONS =
+        List.of(
+            Set.of(Flag.SOLUTIONS, Flag.ANSWERS, Flag.OUTPUT),
+            Set.of(Flag.SOLUTIONS, Flag.ANSWERS, Flag.MODE, Flag.OUTPUT),
+            Set.of(Flag.SOLUTIONS, Flag.ANSWERS, Flag.EXCUSES, Flag.OUTPUT),
+            Set.of(Flag.SOLUTIONS, Flag.ANSWERS, Flag.EXCUSES, Flag.MODE, Flag.OUTPUT)
+        );
+
+    public static void main(final String[] args)
+    throws IOException, IllegalAccessException, InvocationTargetException, NoSuchMethodException {
+        final CLITamer<Flag> tamer = new CLITamer<Flag>(Flag.class);
+        if (args == null || args.length < 1) {
+            System.out.println(tamer.getParameterDescriptions());
+            System.out.println(Main.helpText());
+            return;
+        }
+        final Parameters<Flag> options = tamer.parse(args);
+        if (!Main.ALLOWED_COMBINATIONS.contains(options.keySet())) {
+            System.out.println(tamer.getParameterDescriptions());
+            System.out.println(Main.helpText());
+            return;
         }
         final FormsExcelToCsvConverter excelConverter = new FormsExcelToCsvConverter();
-        final SolutionsByQuizMaster solutionsByQuizMaster = Main.parseSolutions(args[0]);
+        final SolutionsByQuizMaster solutionsByQuizMaster = Main.parseSolutions(options.get(Flag.SOLUTIONS));
         final AnswerDataByQuizMasterAndParticipant answerDataByQuizMasterAndParticipant =
             new AnswerDataByQuizMasterAndParticipant();
-        for (File file : new File(args[1]).listFiles()) {
+        for (File file : new File(options.get(Flag.ANSWERS)).listFiles()) {
             if (excelConverter.isExcelFile(file)) {
                 file = excelConverter.convert(file);
             }
@@ -74,32 +93,64 @@ public class Main {
                 throw new IOException("Error in file " + file.getAbsolutePath(), e);
             }
         }
-        final ExecutionMode mode = args.length == 4 ? ExecutionMode.from(args[3]) : ExecutionMode.FULL;
+        final ExecutionMode mode = ExecutionMode.from(options.getOrDefault(Flag.MODE, "FULL"));
         final ResultsByQuizMasterAndParticipant results =
             new ResultsByQuizMasterAndParticipant(
                 answerDataByQuizMasterAndParticipant,
                 Main.selectResultComputation(mode)
             );
+        final Map<String, Integer> excused =
+            Main.parseExcuses(Optional.ofNullable(options.get(Flag.EXCUSES)).map(File::new));
         final List<Evaluation> quizMasterEvaluation = Main.selectQuizMasterEvaluation(mode);
         final List<Evaluation> participantsEvaluation = Main.selectParticipantsEvaluation(mode);
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(args[2]))) {
-            new CSVWriter(writer).writeCSV(results, quizMasterEvaluation, participantsEvaluation);
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(options.get(Flag.OUTPUT)))) {
+            new CSVWriter(writer).writeCSV(results, quizMasterEvaluation, participantsEvaluation, excused);
         }
         if (mode == ExecutionMode.FULL) {
-            for (
-                final File protocol :
-                    new File(args[0]).getAbsoluteFile().toPath().getParent().resolve("protocols").toFile().listFiles()
-            ) {
+            final File[] protocols =
+                new File(options.get(Flag.SOLUTIONS))
+                .getAbsoluteFile()
+                .toPath()
+                .getParent()
+                .resolve("protocols")
+                .toFile()
+                .listFiles();
+            for (final File protocol : protocols) {
                 if (protocol.getName().endsWith(".tex")) {
                     new ProtocolUpdater(
                         protocol.toPath(),
                         results,
                         quizMasterEvaluation,
                         participantsEvaluation
-                    ).updateProtocol();
+                    ).updateProtocol(excused);
                 }
             }
         }
+    }
+
+    private static String helpText() {
+        return String.format(
+            "Allowed combinations: %s",
+            Main.ALLOWED_COMBINATIONS
+            .stream()
+            .map(set ->
+                set
+                .stream()
+                .map(flag -> "-" + flag.shortName())
+                .collect(Collectors.joining(" and "))
+            ).collect(Collectors.joining(", "))
+        );
+    }
+
+    private static Map<String, Integer> parseExcuses(final Optional<File> file) throws IOException {
+        if (file.isEmpty()) {
+            return Collections.emptyMap();
+        }
+        return Files
+            .lines(file.get().toPath())
+            .filter(line -> !line.isBlank())
+            .map(line -> line.split(";"))
+            .collect(Collectors.toMap(split -> split[0], split -> Integer.parseInt(split[1])));
     }
 
     private static SolutionsByQuizMaster parseSolutions(final String file) throws IOException {

@@ -31,20 +31,20 @@ public class ProtocolUpdater {
         this.results = results;
     }
 
-    public void updateProtocol() throws IOException {
+    public void updateProtocol(final Map<String, Integer> excused) throws IOException {
         final List<String> content = Files.readAllLines(this.protocolPath);
         final String student = ProtocolUpdater.parseStudent(content);
         if (student == null) {
             return;
         }
-        final int excused = 0;
-        final String passedPercentage = this.calculatePassedPercentage(student, excused);
-        final String bonusQuizMaster1 = this.calculateBonusQuizMaster1(student, excused);
-        final String bonusQuizMaster2 = this.calculateBonusQuizMaster2(student, excused);
-        final String bonusQuizMaster3 = this.calculateBonusQuizMaster3(student, excused);
-        final String bonusParticipant1 = this.calculateBonusParticipant1(student, excused);
-        final String bonusParticipant2 = this.calculateBonusParticipant2(student, excused);
-        final String bonusParticipant3 = this.calculateBonusParticipant3(student, excused);
+        final int currentExcused = excused.getOrDefault(student, 0);
+        final String passedPercentage = this.calculatePassedPercentage(student, currentExcused);
+        final String bonusQuizMaster1 = this.calculateBonusQuizMaster1(student, currentExcused);
+        final String bonusQuizMaster2 = this.calculateBonusQuizMaster2(student, currentExcused);
+        final String bonusQuizMaster3 = this.calculateBonusQuizMaster3(student, currentExcused);
+        final String bonusParticipant1 = this.calculateBonusParticipant1(student, currentExcused);
+        final String bonusParticipant2 = this.calculateBonusParticipant2(student, currentExcused);
+        final String bonusParticipant3 = this.calculateBonusParticipant3(student, currentExcused);
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(this.protocolPath.toFile()))) {
             for (final String line : content) {
                 switch (line) {

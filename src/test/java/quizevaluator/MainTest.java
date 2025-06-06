@@ -1,6 +1,7 @@
 package quizevaluator;
 
 import java.io.*;
+import java.util.*;
 
 import org.testng.*;
 import org.testng.annotations.Test;
@@ -30,7 +31,8 @@ class MainTest {
             new CSVWriter(writer).writeCSV(
                 results,
                 Main.QUIZ_MASTER_EVALUATIONS_OLD,
-                Main.PARTICIPANTS_EVALUATIONS_OLD
+                Main.PARTICIPANTS_EVALUATIONS_OLD,
+                Collections.emptyMap()
             );
         }
         Assert.assertEquals(
