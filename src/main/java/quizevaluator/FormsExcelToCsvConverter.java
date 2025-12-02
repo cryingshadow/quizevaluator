@@ -1,18 +1,12 @@
 package quizevaluator;
 
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import java.io.*;
+import java.nio.file.*;
+import java.util.*;
+import java.util.regex.*;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.*;
 
 public class FormsExcelToCsvConverter {
 
@@ -20,10 +14,7 @@ public class FormsExcelToCsvConverter {
     private static final int ANSWER_COLUMNS_OFFSET = 6;
     private static final int NR_OF_ANSWER_COLUMNS = 10;
 
-    public FormsExcelToCsvConverter() {
-    }
-
-    public boolean isExcelFile(File file) {
+    public static boolean isExcelFile(File file) {
         return file.getName().endsWith(".xlsx");
     }
 
@@ -33,50 +24,74 @@ public class FormsExcelToCsvConverter {
      * by letting the form have a name such as "Christian Soltenborn: The Topic of my Talk" - if the
      * form's Excel file is downloaded, it will have the correct file name.
      *
-     * @param excelFile
+     * @param formsResultsExcelFile
      * @return
      * @throws IOException
      */
-    public File convert(File excelFile) throws IOException {
-        String filename = excelFile.getName();
-        String quizAuthor = filename.substring(0, filename.indexOf('_'));
-
-        File targetFile = File.createTempFile(quizAuthor, ".csv");
+    public static File convertToCSV(final File formsResultsExcelFile) throws IOException {
+        final String quizAuthor = FormsExcelToCsvConverter.extractQuizAuthor(formsResultsExcelFile);
+        final File targetFile = File.createTempFile(quizAuthor, ".csv");
         targetFile.deleteOnExit();
-
-        List<String> lines = new ArrayList<>();
+        final List<String> lines = new ArrayList<>();
         lines.add(quizAuthor);
-
-        FileInputStream fileInputStream = new FileInputStream(excelFile);
-        Workbook workbook = new XSSFWorkbook(fileInputStream);
-        Sheet sheet = workbook.getSheetAt(0);
-
-        for (int rowNumber = 1; rowNumber < sheet.getPhysicalNumberOfRows(); rowNumber++) {
-            Row row = sheet.getRow(rowNumber);
-            String participant = row.getCell(PARTICIPANT_COLUMN).getStringCellValue();
-
-            StringBuilder line = new StringBuilder(participant);
-            line.append("; ");
-            line.append(String.join(", ", getAnswers(row)));
-
-            lines.add(line.toString());
+        try (final Workbook workbook = new XSSFWorkbook(new FileInputStream(formsResultsExcelFile))) {
+            final Sheet sheet = workbook.getSheetAt(0);
+            for (int rowNumber = 1; rowNumber < sheet.getPhysicalNumberOfRows(); rowNumber++) {
+                lines.add(FormsExcelToCsvConverter.convertAnswerRow(sheet.getRow(rowNumber)));
+            }
         }
-
-        workbook.close();
-        fileInputStream.close();
-
-        Files.write(Path.of(targetFile.toURI()), lines);
+        Files.write(targetFile.toPath(), lines);
         return targetFile;
     }
 
-    private List<String> getAnswers(Row row) {
-        List<String> answers = new ArrayList<>();
-        for (int i = 0; i < NR_OF_ANSWER_COLUMNS; i++) {
-            int column = i + ANSWER_COLUMNS_OFFSET;
-            Cell cell = row.getCell(column);
+    private static String convertAnswerRow(final Row row) {
+        final String participant = row.getCell(FormsExcelToCsvConverter.PARTICIPANT_COLUMN).getStringCellValue();
+        final StringBuilder line = new StringBuilder(participant);
+        line.append("; ");
+        line.append(String.join(", ", FormsExcelToCsvConverter.getAnswers(row)));
+        return line.toString();
+    }
+
+    private static String extractQuizAuthor(final File formsResultsExcelFile) throws IOException {
+        final String filename = formsResultsExcelFile.getName();
+        final Pattern defaultFormsNamePattern = Pattern.compile("Multiple-Choice-Quiz zum Thema ((\\w|\\s)+)\\(.*");
+        final Matcher defaultFormsNameMatcher = defaultFormsNamePattern.matcher(filename);
+        if (defaultFormsNameMatcher.matches()) {
+            return FormsExcelToCsvConverter.findQuizAuthorByTopic(
+                defaultFormsNameMatcher.group(1),
+                formsResultsExcelFile
+            );
+        } else if (filename.matches("[^_]+_.+")) {
+            return filename.substring(0, filename.indexOf('_'));
+        }
+        throw new IllegalArgumentException("File name does not match expected pattern!");
+    }
+
+    private static String findQuizAuthorByTopic(
+        final String topic,
+        final File formsResultsExcelFile
+    ) throws IOException {
+        final Pattern assignmentPattern = Pattern.compile("([^>]+) -> \\(\\d+\\) (.+)");
+        return Files.lines(formsResultsExcelFile.getAbsoluteFile().toPath().getParent().resolve("assignment.txt"))
+            .map(line -> {
+                final Matcher matcher = assignmentPattern.matcher(line);
+                if (matcher.matches() && matcher.group(2).trim().equals(topic)) {
+                    return matcher.group(1);
+                }
+                return "";
+            }).filter(line -> !line.isBlank())
+            .findAny()
+            .get();
+    }
+
+    private static List<String> getAnswers(final Row row) {
+        final List<String> answers = new ArrayList<>();
+        for (int i = 0; i < FormsExcelToCsvConverter.NR_OF_ANSWER_COLUMNS; i++) {
+            final int column = i + FormsExcelToCsvConverter.ANSWER_COLUMNS_OFFSET;
+            final Cell cell = row.getCell(column);
             String answer = (i + 1) + ":";
             if (cell != null) {
-                String cellValue = cell.getStringCellValue().trim();
+                final String cellValue = cell.getStringCellValue().trim();
                 if (!cellValue.isBlank()) {
                     answer += String.valueOf(cellValue.charAt(0)).toLowerCase();
                 }

@@ -79,13 +79,12 @@ public class Main {
             System.out.println(Main.helpText());
             return;
         }
-        final FormsExcelToCsvConverter excelConverter = new FormsExcelToCsvConverter();
         final SolutionsByQuizMaster solutionsByQuizMaster = Main.parseSolutions(options.get(Flag.SOLUTIONS));
         final AnswerDataByQuizMasterAndParticipant answerDataByQuizMasterAndParticipant =
             new AnswerDataByQuizMasterAndParticipant();
         for (File file : new File(options.get(Flag.ANSWERS)).listFiles()) {
-            if (excelConverter.isExcelFile(file)) {
-                file = excelConverter.convert(file);
+            if (FormsExcelToCsvConverter.isExcelFile(file)) {
+                file = FormsExcelToCsvConverter.convertToCSV(file);
             }
             try (BufferedReader answersReader = new BufferedReader(new FileReader(file))) {
                 answerDataByQuizMasterAndParticipant.parseAnswers(answersReader, solutionsByQuizMaster);
