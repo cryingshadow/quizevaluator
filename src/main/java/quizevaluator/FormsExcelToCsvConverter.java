@@ -10,13 +10,11 @@ import org.apache.poi.xssf.usermodel.*;
 
 public class FormsExcelToCsvConverter {
 
-    private static final int PARTICIPANT_COLUMN = 4;
     private static final int ANSWER_COLUMNS_OFFSET = 6;
+
     private static final int NR_OF_ANSWER_COLUMNS = 10;
 
-    public static boolean isExcelFile(File file) {
-        return file.getName().endsWith(".xlsx");
-    }
+    private static final int PARTICIPANT_COLUMN = 4;
 
     /**
      * Converts an Excel file as can be downloaded from a MS Forms quiz into our answer file format.
@@ -42,6 +40,10 @@ public class FormsExcelToCsvConverter {
         }
         Files.write(targetFile.toPath(), lines);
         return targetFile;
+    }
+
+    public static boolean isExcelFile(final File file) {
+        return file.getName().endsWith(".xlsx");
     }
 
     private static String convertAnswerRow(final Row row) {
@@ -72,8 +74,10 @@ public class FormsExcelToCsvConverter {
         final File formsResultsExcelFile
     ) throws IOException {
         final Pattern assignmentPattern = Pattern.compile("([^>]+) -> \\(\\d+\\) (.+)");
-        return Files.lines(formsResultsExcelFile.getAbsoluteFile().toPath().getParent().resolve("assignment.txt"))
-            .map(line -> {
+        return
+            Files.lines(
+                formsResultsExcelFile.getAbsoluteFile().toPath().getParent().getParent().resolve("assignment.txt")
+            ).map(line -> {
                 final Matcher matcher = assignmentPattern.matcher(line);
                 if (matcher.matches() && matcher.group(2).trim().equals(topic)) {
                     return matcher.group(1);
