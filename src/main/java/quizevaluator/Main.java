@@ -80,6 +80,25 @@ public class Main {
             return;
         }
         final SolutionsByQuizMaster solutionsByQuizMaster = Main.parseSolutions(options.get(Flag.SOLUTIONS));
+        final ExecutionMode mode = ExecutionMode.from(options.getOrDefault(Flag.MODE, "FULL"));
+        final ResultsByQuizMasterAndParticipant results = Main.computeResults(solutionsByQuizMaster, mode, options);
+        final Map<String, Integer> excused =
+            Main.parseExcuses(Optional.ofNullable(options.get(Flag.EXCUSES)).map(File::new));
+        final List<Evaluation> quizMasterEvaluation = Main.selectQuizMasterEvaluation(mode);
+        final List<Evaluation> participantsEvaluation = Main.selectParticipantsEvaluation(mode);
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(options.get(Flag.OUTPUT)))) {
+            new CSVWriter(writer).writeCSV(results, quizMasterEvaluation, participantsEvaluation, excused);
+        }
+        if (mode == ExecutionMode.FULL) {
+            Main.updateProtocols(options, results, quizMasterEvaluation, participantsEvaluation, excused);
+        }
+    }
+
+    private static ResultsByQuizMasterAndParticipant computeResults(
+        final SolutionsByQuizMaster solutionsByQuizMaster,
+        final ExecutionMode mode,
+        final Parameters<Flag> options
+    ) throws IOException {
         final AnswerDataByQuizMasterAndParticipant answerDataByQuizMasterAndParticipant =
             new AnswerDataByQuizMasterAndParticipant();
         for (File file : new File(options.get(Flag.ANSWERS)).listFiles()) {
@@ -92,39 +111,10 @@ public class Main {
                 throw new IOException("Error in file " + file.getAbsolutePath(), e);
             }
         }
-        final ExecutionMode mode = ExecutionMode.from(options.getOrDefault(Flag.MODE, "FULL"));
-        final ResultsByQuizMasterAndParticipant results =
-            new ResultsByQuizMasterAndParticipant(
-                answerDataByQuizMasterAndParticipant,
-                Main.selectResultComputation(mode)
-            );
-        final Map<String, Integer> excused =
-            Main.parseExcuses(Optional.ofNullable(options.get(Flag.EXCUSES)).map(File::new));
-        final List<Evaluation> quizMasterEvaluation = Main.selectQuizMasterEvaluation(mode);
-        final List<Evaluation> participantsEvaluation = Main.selectParticipantsEvaluation(mode);
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(options.get(Flag.OUTPUT)))) {
-            new CSVWriter(writer).writeCSV(results, quizMasterEvaluation, participantsEvaluation, excused);
-        }
-        if (mode == ExecutionMode.FULL) {
-            final File[] protocols =
-                new File(options.get(Flag.SOLUTIONS))
-                .getAbsoluteFile()
-                .toPath()
-                .getParent()
-                .resolve("protocols")
-                .toFile()
-                .listFiles();
-            for (final File protocol : protocols) {
-                if (protocol.getName().endsWith(".tex")) {
-                    new ProtocolUpdater(
-                        protocol.toPath(),
-                        results,
-                        quizMasterEvaluation,
-                        participantsEvaluation
-                    ).updateProtocol(excused);
-                }
-            }
-        }
+        return new ResultsByQuizMasterAndParticipant(
+            answerDataByQuizMasterAndParticipant,
+            Main.selectResultComputation(mode)
+        );
     }
 
     private static String helpText() {
@@ -191,6 +181,33 @@ public class Main {
             return new ModernMCResultComputation();
         default:
             throw new IllegalStateException("New execution mode without complete implementation detected!");
+        }
+    }
+
+    private static void updateProtocols(
+        final Parameters<Flag> options,
+        final ResultsByQuizMasterAndParticipant results,
+        final List<Evaluation> quizMasterEvaluation,
+        final List<Evaluation> participantsEvaluation,
+        final Map<String, Integer> excused
+    ) throws IOException {
+        final File[] protocols =
+            new File(options.get(Flag.SOLUTIONS))
+            .getAbsoluteFile()
+            .toPath()
+            .getParent()
+            .resolve("protocols")
+            .toFile()
+            .listFiles();
+        for (final File protocol : protocols) {
+            if (protocol.getName().endsWith(".tex")) {
+                new ProtocolUpdater(
+                    protocol.toPath(),
+                    results,
+                    quizMasterEvaluation,
+                    participantsEvaluation
+                ).updateProtocol(excused);
+            }
         }
     }
 
