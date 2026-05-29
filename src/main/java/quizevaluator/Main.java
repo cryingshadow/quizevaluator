@@ -57,28 +57,14 @@ public class Main {
             new BonusForQuizMasterEvaluation()
         );
 
-    private static final Collection<Set<Flag>> ALLOWED_COMBINATIONS =
-        List.of(
-            Set.of(Flag.SOLUTIONS, Flag.ANSWERS, Flag.OUTPUT),
-            Set.of(Flag.SOLUTIONS, Flag.ANSWERS, Flag.MODE, Flag.OUTPUT),
-            Set.of(Flag.SOLUTIONS, Flag.ANSWERS, Flag.EXCUSES, Flag.OUTPUT),
-            Set.of(Flag.SOLUTIONS, Flag.ANSWERS, Flag.EXCUSES, Flag.MODE, Flag.OUTPUT)
-        );
-
     public static void main(final String[] args)
     throws IOException, IllegalAccessException, InvocationTargetException, NoSuchMethodException {
-        final CLITamer<Flag> tamer = new CLITamer<Flag>(Flag.class);
+        final CLITamer<Flag> tamer = new CLITamer<Flag>(Flag.class, Set.of(Flag.SOLUTIONS, Flag.ANSWERS, Flag.OUTPUT));
         if (args == null || args.length < 1) {
             System.out.println(tamer.getParameterDescriptions());
-            System.out.println(Main.helpText());
             return;
         }
         final Parameters<Flag> options = tamer.parse(args);
-        if (!Main.ALLOWED_COMBINATIONS.contains(options.keySet())) {
-            System.out.println(tamer.getParameterDescriptions());
-            System.out.println(Main.helpText());
-            return;
-        }
         final SolutionsByQuizMaster solutionsByQuizMaster = Main.parseSolutions(options.get(Flag.SOLUTIONS));
         final ExecutionMode mode = ExecutionMode.from(options.getOrDefault(Flag.MODE, "FULL"));
         final ResultsByQuizMasterAndParticipant results = Main.computeResults(solutionsByQuizMaster, mode, options);
@@ -86,11 +72,12 @@ public class Main {
             Main.parseExcuses(Optional.ofNullable(options.get(Flag.EXCUSES)).map(File::new));
         final List<Evaluation> quizMasterEvaluation = Main.selectQuizMasterEvaluation(mode);
         final List<Evaluation> participantsEvaluation = Main.selectParticipantsEvaluation(mode);
+        final List<String> canceled = Main.parseCanceled(Optional.ofNullable(options.get(Flag.CANCELED)).map(File::new));
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(options.get(Flag.OUTPUT)))) {
-            new CSVWriter(writer).writeCSV(results, quizMasterEvaluation, participantsEvaluation, excused);
+            new CSVWriter(writer).writeCSV(results, quizMasterEvaluation, participantsEvaluation, excused, canceled);
         }
         if (mode == ExecutionMode.FULL) {
-            Main.updateProtocols(options, results, quizMasterEvaluation, participantsEvaluation, excused);
+            Main.updateProtocols(options, results, quizMasterEvaluation, participantsEvaluation, excused, canceled);
         }
     }
 
@@ -117,18 +104,14 @@ public class Main {
         );
     }
 
-    private static String helpText() {
-        return String.format(
-            "Allowed combinations: %s",
-            Main.ALLOWED_COMBINATIONS
-            .stream()
-            .map(set ->
-                set
-                .stream()
-                .map(flag -> "-" + flag.shortName())
-                .collect(Collectors.joining(" and "))
-            ).collect(Collectors.joining(", "))
-        );
+    private static List<String> parseCanceled(final Optional<File> file) throws IOException {
+        if (file.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return Files
+            .lines(file.get().toPath())
+            .filter(line -> !line.isBlank())
+            .toList();
     }
 
     private static Map<String, Integer> parseExcuses(final Optional<File> file) throws IOException {
@@ -189,7 +172,8 @@ public class Main {
         final ResultsByQuizMasterAndParticipant results,
         final List<Evaluation> quizMasterEvaluation,
         final List<Evaluation> participantsEvaluation,
-        final Map<String, Integer> excused
+        final Map<String, Integer> excused,
+        final List<String> canceled
     ) throws IOException {
         final File[] protocols =
             new File(options.get(Flag.SOLUTIONS))
@@ -206,7 +190,7 @@ public class Main {
                     results,
                     quizMasterEvaluation,
                     participantsEvaluation
-                ).updateProtocol(excused);
+                ).updateProtocol(excused, canceled);
             }
         }
     }

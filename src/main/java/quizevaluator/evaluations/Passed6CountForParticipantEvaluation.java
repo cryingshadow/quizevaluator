@@ -3,7 +3,7 @@ package quizevaluator.evaluations;
 public class Passed6CountForParticipantEvaluation implements Evaluation {
 
     public static int passedCount(final ResultData data) {
-        return Evaluation.passedCountParticipant(data, 6);
+        return data.passedCountParticipant(6);
     }
 
     @Override

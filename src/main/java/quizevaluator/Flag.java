@@ -6,6 +6,8 @@ public enum Flag implements Parameter {
 
     ANSWERS("a", "answers", "Folder containing the quiz participants' answers."),
 
+    CANCELED("c", "canceled", "Number of canceled quizzes."),
+
     EXCUSES("e", "excuses", "File containing the number of excused quizzes for each participant."),
 
     MODE("m", "mode", "Execution mode (FULL, NEW, or OLD)."),

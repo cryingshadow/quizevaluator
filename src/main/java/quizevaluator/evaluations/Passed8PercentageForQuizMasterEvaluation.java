@@ -3,7 +3,7 @@ package quizevaluator.evaluations;
 public class Passed8PercentageForQuizMasterEvaluation implements Evaluation {
 
     public static double passedPercentage(final ResultData data) {
-        return Evaluation.passedPercentageQuizMaster(data, Passed8CountForQuizMasterEvaluation::passedCount);
+        return data.passedPercentageQuizMaster(Passed8CountForQuizMasterEvaluation::passedCount);
     }
 
     @Override

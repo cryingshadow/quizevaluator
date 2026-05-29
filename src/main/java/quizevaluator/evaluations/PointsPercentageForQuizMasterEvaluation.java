@@ -3,8 +3,8 @@ package quizevaluator.evaluations;
 public class PointsPercentageForQuizMasterEvaluation implements Evaluation {
 
     public static double pointsPercentage(final ResultData data) {
-        final double sumTimes100 = TotalPointsForQuizMasterEvaluation.totalPoints(data) * 100;
-        final int total = data.results().get(data.name()).size() * 10;
+        final double sumTimes100 = data.totalPointsInOwnQuiz() * 100;
+        final int total = data.totalNumberOfParticipantsInOwnQuiz() * 10;
         return sumTimes100 / total;
     }
 

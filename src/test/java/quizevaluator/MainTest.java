@@ -32,7 +32,8 @@ class MainTest {
                 results,
                 Main.QUIZ_MASTER_EVALUATIONS_OLD,
                 Main.PARTICIPANTS_EVALUATIONS_OLD,
-                Collections.emptyMap()
+                Collections.emptyMap(),
+                Collections.emptyList()
             );
         }
         Assert.assertEquals(

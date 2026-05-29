@@ -31,20 +31,20 @@ public class ProtocolUpdater {
         this.results = results;
     }
 
-    public void updateProtocol(final Map<String, Integer> excused) throws IOException {
+    public void updateProtocol(final Map<String, Integer> excused, final List<String> canceled) throws IOException {
         final List<String> content = Files.readAllLines(this.protocolPath);
         final String student = ProtocolUpdater.parseStudent(content);
         if (student == null) {
             return;
         }
         final int currentExcused = excused.getOrDefault(student, 0);
-        final String passedPercentage = this.calculatePassedPercentage(student, currentExcused);
-        final String bonusQuizMaster1 = this.calculateBonusQuizMaster1(student, currentExcused);
-        final String bonusQuizMaster2 = this.calculateBonusQuizMaster2(student, currentExcused);
-        final String bonusQuizMaster3 = this.calculateBonusQuizMaster3(student, currentExcused);
-        final String bonusParticipant1 = this.calculateBonusParticipant1(student, currentExcused);
-        final String bonusParticipant2 = this.calculateBonusParticipant2(student, currentExcused);
-        final String bonusParticipant3 = this.calculateBonusParticipant3(student, currentExcused);
+        final String passedPercentage = this.calculatePassedPercentage(student, currentExcused, canceled);
+        final String bonusQuizMaster1 = this.calculateBonusQuizMaster1(student, currentExcused, canceled);
+        final String bonusQuizMaster2 = this.calculateBonusQuizMaster2(student, currentExcused, canceled);
+        final String bonusQuizMaster3 = this.calculateBonusQuizMaster3(student, currentExcused, canceled);
+        final String bonusParticipant1 = this.calculateBonusParticipant1(student, currentExcused, canceled);
+        final String bonusParticipant2 = this.calculateBonusParticipant2(student, currentExcused, canceled);
+        final String bonusParticipant3 = this.calculateBonusParticipant3(student, currentExcused, canceled);
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(this.protocolPath.toFile()))) {
             for (final String line : content) {
                 switch (line) {
@@ -81,51 +81,53 @@ public class ProtocolUpdater {
         return calculation.calculation().apply(data) >= calculation.threshold() ? "1" : "0";
     }
 
-    private String calculateBonusParticipant1(final String student, final int excused) {
+    private String calculateBonusParticipant1(final String student, final int excused, final List<String> canceled) {
         return this.applyBonusCalculation(
-            new ResultData(this.results, student, excused),
+            new ResultData(this.results, student, excused, canceled),
             ModernBonusForParticipantEvaluation.CALCULATIONS[0]
         );
     }
 
-    private String calculateBonusParticipant2(final String student, final int excused) {
+    private String calculateBonusParticipant2(final String student, final int excused, final List<String> canceled) {
         return this.applyBonusCalculation(
-            new ResultData(this.results, student, excused),
+            new ResultData(this.results, student, excused, canceled),
             ModernBonusForParticipantEvaluation.CALCULATIONS[1]
         );
     }
 
-    private String calculateBonusParticipant3(final String student, final int excused) {
+    private String calculateBonusParticipant3(final String student, final int excused, final List<String> canceled) {
         return this.applyBonusCalculation(
-            new ResultData(this.results, student, excused),
+            new ResultData(this.results, student, excused, canceled),
             ModernBonusForParticipantEvaluation.CALCULATIONS[2]
         );
     }
 
-    private String calculateBonusQuizMaster1(final String student, final int excused) {
+    private String calculateBonusQuizMaster1(final String student, final int excused, final List<String> canceled) {
         return this.applyBonusCalculation(
-            new ResultData(this.results, student, excused),
+            new ResultData(this.results, student, excused, canceled),
             ModernBonusForQuizMasterEvaluation.CALCULATIONS[0]
         );
     }
 
-    private String calculateBonusQuizMaster2(final String student, final int excused) {
+    private String calculateBonusQuizMaster2(final String student, final int excused, final List<String> canceled) {
         return this.applyBonusCalculation(
-            new ResultData(this.results, student, excused),
+            new ResultData(this.results, student, excused, canceled),
             ModernBonusForQuizMasterEvaluation.CALCULATIONS[1]
         );
     }
 
-    private String calculateBonusQuizMaster3(final String student, final int excused) {
+    private String calculateBonusQuizMaster3(final String student, final int excused, final List<String> canceled) {
         return this.applyBonusCalculation(
-            new ResultData(this.results, student, excused),
+            new ResultData(this.results, student, excused, canceled),
             ModernBonusForQuizMasterEvaluation.CALCULATIONS[2]
         );
     }
 
-    private String calculatePassedPercentage(final String student, final int excused) {
+    private String calculatePassedPercentage(final String student, final int excused, final List<String> canceled) {
         final double percentage =
-            Passed6PercentageForQuizMasterEvaluation.passedPercentage(new ResultData(this.results, student, excused));
+            Passed6PercentageForQuizMasterEvaluation.passedPercentage(
+                new ResultData(this.results, student, excused, canceled)
+            );
         if ((percentage % 1) == 0) {
             return String.valueOf((int)percentage);
         }

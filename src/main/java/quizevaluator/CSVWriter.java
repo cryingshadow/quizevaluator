@@ -17,7 +17,8 @@ public class CSVWriter {
         final ResultsByQuizMasterAndParticipant resultsByQuizMasterAndParticipant,
         final List<Evaluation> quizMasterEvaluations,
         final List<Evaluation> participantEvaluations,
-        final Map<String, Integer> excused
+        final Map<String, Integer> excused,
+        final List<String> canceled
     ) throws IOException {
         final List<String> names = new ArrayList<String>(resultsByQuizMasterAndParticipant.keySet());
         final Map<String, Map<String, String>> cellsByQuizMasterAndTitle =
@@ -43,28 +44,28 @@ public class CSVWriter {
                 cellsByQuizMasterAndTitle.get(name).put(
                     quizMasterEvaluation.title(),
                     quizMasterEvaluation.cellText(
-                        new ResultData(resultsByQuizMasterAndParticipant, name, currentExcused)
+                        new ResultData(resultsByQuizMasterAndParticipant, name, currentExcused, canceled)
                     )
                 );
                 totalPointsByName.put(
                     name,
                     totalPointsByName.get(name)
                     + quizMasterEvaluation.evaluation(
-                        new ResultData(resultsByQuizMasterAndParticipant, name, currentExcused)
+                        new ResultData(resultsByQuizMasterAndParticipant, name, currentExcused, canceled)
                     )
                 );
             }
             for (final Evaluation participantEvaluation : participantEvaluations) {
                 participantCells.get(name).add(
                     participantEvaluation.cellText(
-                        new ResultData(resultsByQuizMasterAndParticipant, name, currentExcused)
+                        new ResultData(resultsByQuizMasterAndParticipant, name, currentExcused, canceled)
                     )
                 );
                 totalPointsByName.put(
                     name,
                     totalPointsByName.get(name)
                     + participantEvaluation.evaluation(
-                        new ResultData(resultsByQuizMasterAndParticipant, name, currentExcused)
+                        new ResultData(resultsByQuizMasterAndParticipant, name, currentExcused, canceled)
                     )
                 );
             }
