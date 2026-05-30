@@ -72,7 +72,8 @@ public class Main {
             Main.parseExcuses(Optional.ofNullable(options.get(Flag.EXCUSES)).map(File::new));
         final List<Evaluation> quizMasterEvaluation = Main.selectQuizMasterEvaluation(mode);
         final List<Evaluation> participantsEvaluation = Main.selectParticipantsEvaluation(mode);
-        final List<String> canceled = Main.parseCanceled(Optional.ofNullable(options.get(Flag.CANCELED)).map(File::new));
+        final List<String> canceled =
+            Main.parseCanceled(Optional.ofNullable(options.get(Flag.CANCELED)).map(File::new));
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(options.get(Flag.OUTPUT)))) {
             new CSVWriter(writer).writeCSV(results, quizMasterEvaluation, participantsEvaluation, excused, canceled);
         }
