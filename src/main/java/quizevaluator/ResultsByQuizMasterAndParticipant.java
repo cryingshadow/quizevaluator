@@ -7,13 +7,14 @@ public class ResultsByQuizMasterAndParticipant extends LinkedHashMap<String, Map
     private static final long serialVersionUID = -3759177469532639760L;
 
     public ResultsByQuizMasterAndParticipant(
+        final SolutionsByQuizMaster solutionsByQuizMaster,
         final AnswerDataByQuizMasterAndParticipant answersByQuizMasterAndParticipant,
         final ResultComputation resultComputation
     ) {
-        for (final String quizMaster : answersByQuizMasterAndParticipant.keySet()) {
+        for (final String quizMaster : solutionsByQuizMaster.keySet()) {
             final Map<String, Integer> resultsByParticipant = new LinkedHashMap<String, Integer>();
             final Map<String, AnswerData> answersByParticipant =
-                answersByQuizMasterAndParticipant.get(quizMaster);
+                answersByQuizMasterAndParticipant.getOrDefault(quizMaster, Collections.emptyMap());
             for (final String participant : answersByParticipant.keySet()) {
                 resultsByParticipant.put(participant, resultComputation.apply(answersByParticipant.get(participant)));
             }

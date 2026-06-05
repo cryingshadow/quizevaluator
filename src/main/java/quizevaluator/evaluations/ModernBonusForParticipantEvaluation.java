@@ -1,35 +1,29 @@
 package quizevaluator.evaluations;
 
-public class ModernBonusForParticipantEvaluation implements Evaluation {
+public class ModernBonusForParticipantEvaluation implements BonusEvaluation {
 
-    public static final BonusCalculation[] CALCULATIONS =
-        new BonusCalculation[] {
-            new BonusCalculation(
-                data -> (int)PointsPercentageForParticipantEvaluation.pointsPercentage(data),
-                60
-            ),
-            new BonusCalculation(
-                data -> (int)Passed6PercentageForParticipantEvaluation.passedPercentage(data),
-                100
-            ),
-            new BonusCalculation(
-                data -> (int)Passed9PercentageForParticipantEvaluation.passedPercentage(data),
-                80
-            )
-        };
-
-    private static int bonus(final ResultData data) {
-        return BonusCalculation.bonus(data, ModernBonusForParticipantEvaluation.CALCULATIONS);
+    @Override
+    public BonusCalculation bonus1() {
+        return new BonusCalculation(
+            data -> (int)PointsPercentageForParticipantEvaluation.pointsPercentage(data),
+            60
+        );
     }
 
     @Override
-    public String cellText(final ResultData data) {
-        return String.valueOf(ModernBonusForParticipantEvaluation.bonus(data));
+    public BonusCalculation bonus2() {
+        return new BonusCalculation(
+            data -> (int)Passed6PercentageForParticipantEvaluation.passedPercentage(data),
+            100
+        );
     }
 
     @Override
-    public Integer evaluation(final ResultData data) {
-        return ModernBonusForParticipantEvaluation.bonus(data);
+    public BonusCalculation bonus3() {
+        return new BonusCalculation(
+            data -> (int)Passed9PercentageForParticipantEvaluation.passedPercentage(data),
+            80
+        );
     }
 
     @Override

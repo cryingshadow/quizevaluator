@@ -1,19 +1,14 @@
 package quizevaluator.evaluations;
 
-public class Passed6CountForParticipantEvaluation implements Evaluation {
+public class Passed6CountForParticipantEvaluation implements IntegerEvaluation {
 
     public static int passedCount(final ResultData data) {
         return data.passedCountParticipant(6);
     }
 
     @Override
-    public String cellText(final ResultData data) {
-        return String.valueOf(Passed6CountForParticipantEvaluation.passedCount(data));
-    }
-
-    @Override
-    public Integer evaluation(final ResultData data) {
-        return 0;
+    public Integer apply(final ResultData data) {
+        return Passed6CountForParticipantEvaluation.passedCount(data);
     }
 
     @Override

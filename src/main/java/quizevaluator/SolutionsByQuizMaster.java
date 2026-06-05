@@ -18,6 +18,7 @@ public class SolutionsByQuizMaster extends LinkedHashMap<String, Answer> {
             final String quizMaster = line.substring(0, firstSemicolon);
             final String solutionString = line.substring(firstSemicolon + 1);
             if (solutionString.isBlank()) {
+                this.put(quizMaster, new Answer());
                 line = reader.readLine();
                 continue;
             }

@@ -1,19 +1,14 @@
 package quizevaluator.evaluations;
 
-public class Passed8PercentageForParticipantEvaluation implements Evaluation {
+public class Passed8PercentageForParticipantEvaluation implements PercentageEvaluation {
 
     public static double passedPercentage(final ResultData data) {
         return data.passedPercentageParticipant(Passed8CountForParticipantEvaluation::passedCount);
     }
 
     @Override
-    public String cellText(final ResultData data) {
-        return String.format("%.2f", Passed8PercentageForParticipantEvaluation.passedPercentage(data));
-    }
-
-    @Override
-    public Integer evaluation(final ResultData data) {
-        return 0;
+    public Double apply(final ResultData data) {
+        return Passed8PercentageForParticipantEvaluation.passedPercentage(data);
     }
 
     @Override

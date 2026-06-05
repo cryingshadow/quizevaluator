@@ -15,8 +15,7 @@ public class CSVWriter {
 
     public void writeCSV(
         final ResultsByQuizMasterAndParticipant resultsByQuizMasterAndParticipant,
-        final List<Evaluation> quizMasterEvaluations,
-        final List<Evaluation> participantEvaluations,
+        final Evaluations evaluations,
         final Map<String, Integer> excused,
         final List<String> canceled
     ) throws IOException {
@@ -27,10 +26,10 @@ public class CSVWriter {
         final List<String> quizMasterTitles = new ArrayList<String>();
         final List<String> participantTitles = new ArrayList<String>();
         final Map<String, Integer> totalPointsByName = new LinkedHashMap<String, Integer>();
-        for (final Evaluation quizMasterEvaluation : quizMasterEvaluations) {
+        for (final Evaluation quizMasterEvaluation : evaluations.quizMasterEvaluations()) {
             quizMasterTitles.add(quizMasterEvaluation.title());
         }
-        for (final Evaluation participantEvaluation : participantEvaluations) {
+        for (final Evaluation participantEvaluation : evaluations.participantEvaluations()) {
             participantTitles.add(participantEvaluation.title());
         }
         for (final String name : names) {
@@ -38,37 +37,18 @@ public class CSVWriter {
             this.writer.write(name);
             cellsByQuizMasterAndTitle.put(name, new LinkedHashMap<String, String>());
             participantCells.put(name, new ArrayList<String>());
-            totalPointsByName.put(name, 0);
-            final int currentExcused = excused.getOrDefault(name, 0);
-            for (final Evaluation quizMasterEvaluation : quizMasterEvaluations) {
+            final ResultData resultData =
+                new ResultData(resultsByQuizMasterAndParticipant, name, excused.getOrDefault(name, 0), canceled);
+            for (final Evaluation quizMasterEvaluation : evaluations.quizMasterEvaluations()) {
                 cellsByQuizMasterAndTitle.get(name).put(
                     quizMasterEvaluation.title(),
-                    quizMasterEvaluation.cellText(
-                        new ResultData(resultsByQuizMasterAndParticipant, name, currentExcused, canceled)
-                    )
-                );
-                totalPointsByName.put(
-                    name,
-                    totalPointsByName.get(name)
-                    + quizMasterEvaluation.evaluation(
-                        new ResultData(resultsByQuizMasterAndParticipant, name, currentExcused, canceled)
-                    )
+                    quizMasterEvaluation.cellText(resultData)
                 );
             }
-            for (final Evaluation participantEvaluation : participantEvaluations) {
-                participantCells.get(name).add(
-                    participantEvaluation.cellText(
-                        new ResultData(resultsByQuizMasterAndParticipant, name, currentExcused, canceled)
-                    )
-                );
-                totalPointsByName.put(
-                    name,
-                    totalPointsByName.get(name)
-                    + participantEvaluation.evaluation(
-                        new ResultData(resultsByQuizMasterAndParticipant, name, currentExcused, canceled)
-                    )
-                );
+            for (final Evaluation participantEvaluation : evaluations.participantEvaluations()) {
+                participantCells.get(name).add(participantEvaluation.cellText(resultData));
             }
+            totalPointsByName.put(name, evaluations.apply(resultData));
         }
         for (final String title : participantTitles) {
             this.writer.write(";");

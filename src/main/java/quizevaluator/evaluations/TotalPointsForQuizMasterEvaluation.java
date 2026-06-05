@@ -1,15 +1,10 @@
 package quizevaluator.evaluations;
 
-public class TotalPointsForQuizMasterEvaluation implements Evaluation {
+public class TotalPointsForQuizMasterEvaluation implements IntegerEvaluation {
 
     @Override
-    public String cellText(final ResultData data) {
-        return String.valueOf(data.totalPointsInOwnQuiz());
-    }
-
-    @Override
-    public Integer evaluation(final ResultData data) {
-        return 0;
+    public Integer apply(final ResultData data) {
+        return data.totalPointsInOwnQuiz();
     }
 
     @Override

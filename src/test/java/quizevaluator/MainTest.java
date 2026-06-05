@@ -27,43 +27,46 @@ class MainTest {
         final StringWriter output = new StringWriter();
         try (BufferedWriter writer = new BufferedWriter(output)) {
             final ResultsByQuizMasterAndParticipant results =
-                new ResultsByQuizMasterAndParticipant(answers, new OldSchoolMCResultComputation());
+                new ResultsByQuizMasterAndParticipant(
+                    solutionsByQuizMaster,
+                    answers,
+                    new OldSchoolMCResultComputation()
+                );
             new CSVWriter(writer).writeCSV(
                 results,
-                Main.QUIZ_MASTER_EVALUATIONS_OLD,
-                Main.PARTICIPANTS_EVALUATIONS_OLD,
+                Main.EVALUATIONS_OLD,
                 Collections.emptyMap(),
                 Collections.emptyList()
             );
         }
         Assert.assertEquals(
             output.toString(),
-            ";y;z;x;Punkte gesamt;Punkte Prozent;Bestanden gesamt;Bestanden Prozent;Gut bestanden gesamt;Gut bestanden Prozent;Bonuspunkte"
+            ";x;y;z;Punkte gesamt;Punkte Prozent;Bestanden gesamt;Bestanden Prozent;Gut bestanden gesamt;Gut bestanden Prozent;Bonuspunkte"
             + System.lineSeparator()
-            + "y;;10;2;12;60,00;1;50,00;1;50,00;1"
+            + "x;;10;8;18;90,00;2;100,00;2;100,00;3"
             + System.lineSeparator()
-            + "z;0;;0;0;0,00;0;0,00;0;0,00;0"
+            + "y;2;;10;12;60,00;1;50,00;1;50,00;1"
             + System.lineSeparator()
-            + "x;10;8;;18;90,00;2;100,00;2;100,00;3"
+            + "z;0;0;;0;0,00;0;0,00;0;0,00;0"
             + System.lineSeparator()
-            + "Punkte gesamt;10;18;2"
+            + "Punkte gesamt;2;10;18"
             + System.lineSeparator()
-            + "Punkte Prozent;50,00;90,00;10,00"
+            + "Punkte Prozent;10,00;50,00;90,00"
             + System.lineSeparator()
-            + "Bestanden gesamt;1;2;0"
+            + "Bestanden gesamt;0;1;2"
             + System.lineSeparator()
-            + "Bestanden Prozent;50,00;100,00;0,00"
+            + "Bestanden Prozent;0,00;50,00;100,00"
             + System.lineSeparator()
-            + "Bestanden Bewertung;6;10;0"
+            + "Bestanden Bewertung;0;6;10"
             + System.lineSeparator()
-            + "Gut bestanden gesamt;1;2;0"
+            + "Gut bestanden gesamt;0;1;2"
             + System.lineSeparator()
-            + "Gut bestanden Prozent;50,00;100,00;0,00"
+            + "Gut bestanden Prozent;0,00;50,00;100,00"
             + System.lineSeparator()
-            + "Bonus;0;3;0"
+            + "Bonus;0;0;3"
             + System.lineSeparator()
             + System.lineSeparator()
-            + "Bewertung;7;13;3"
+            + "Bewertung;3;7;13"
             + System.lineSeparator()
         );
     }

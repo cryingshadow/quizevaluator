@@ -1,36 +1,15 @@
 package quizevaluator.evaluations;
 
-import java.util.*;
 import java.util.function.*;
-import java.util.stream.*;
 
 public record BonusCalculation(
     Function<ResultData, Integer> calculation,
     int threshold
-) {
+) implements Function<ResultData, Integer> {
 
-    public static int bonus(
-        final ResultData data,
-        final BonusCalculation... calculations
-    ) {
-        return BonusCalculation.bonus(data, Arrays.stream(calculations));
-    }
-
-    public static int bonus(
-        final ResultData data,
-        final Collection<BonusCalculation> calculations
-    ) {
-        return BonusCalculation.bonus(data, calculations.stream());
-    }
-
-    public static int bonus(
-        final ResultData data,
-        final Stream<BonusCalculation> calculations
-    ) {
-        return
-            calculations
-            .mapToInt(c -> c.calculation().apply(data) >= c.threshold() ? 1 : 0)
-            .sum();
+    @Override
+    public Integer apply(final ResultData data) {
+        return this.calculation().apply(data) >= this.threshold() ? 1 : 0;
     }
 
 }

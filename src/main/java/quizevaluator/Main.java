@@ -11,50 +11,50 @@ import quizevaluator.evaluations.*;
 
 public class Main {
 
-    static final List<Evaluation> PARTICIPANTS_EVALUATIONS_NEW =
-        List.of(
-            new TotalPointsForParticipantEvaluation(),
-            new PointsPercentageForParticipantEvaluation(),
-            new Passed6CountForParticipantEvaluation(),
-            new Passed6PercentageForParticipantEvaluation(),
-            new Passed9CountForParticipantEvaluation(),
-            new Passed9PercentageForParticipantEvaluation(),
-            new ModernBonusForParticipantEvaluation()
+    static final Evaluations EVALUATIONS_NEW =
+        new Evaluations(
+            new QuizMasterEvaluations(
+                new TotalPointsForQuizMasterEvaluation(),
+                new PointsPercentageForQuizMasterEvaluation(),
+                new Passed6CountForQuizMasterEvaluation(),
+                new Passed6PercentageForQuizMasterEvaluation(),
+                new Passed6TotalForQuizMasterEvaluation(),
+                new Passed9CountForQuizMasterEvaluation(),
+                new Passed9PercentageForQuizMasterEvaluation(),
+                new ModernBonusForQuizMasterEvaluation()
+            ),
+            new ParticipantEvaluations(
+                new TotalPointsForParticipantEvaluation(),
+                new PointsPercentageForParticipantEvaluation(),
+                new Passed6CountForParticipantEvaluation(),
+                new Passed6PercentageForParticipantEvaluation(),
+                new Passed9CountForParticipantEvaluation(),
+                new Passed9PercentageForParticipantEvaluation(),
+                new ModernBonusForParticipantEvaluation()
+            )
         );
 
-    static final List<Evaluation> PARTICIPANTS_EVALUATIONS_OLD =
-        List.of(
-            new TotalPointsForParticipantEvaluation(),
-            new PointsPercentageForParticipantEvaluation(),
-            new Passed5CountForParticipantEvaluation(),
-            new Passed5PercentageForParticipantEvaluation(),
-            new Passed8CountForParticipantEvaluation(),
-            new Passed8PercentageForParticipantEvaluation(),
-            new BonusForParticipantEvaluation()
-        );
-
-    static final List<Evaluation> QUIZ_MASTER_EVALUATIONS_NEW =
-        List.of(
-            new TotalPointsForQuizMasterEvaluation(),
-            new PointsPercentageForQuizMasterEvaluation(),
-            new Passed6CountForQuizMasterEvaluation(),
-            new Passed6PercentageForQuizMasterEvaluation(),
-            new Passed6TotalForQuizMasterEvaluation(),
-            new Passed9CountForQuizMasterEvaluation(),
-            new Passed9PercentageForQuizMasterEvaluation(),
-            new ModernBonusForQuizMasterEvaluation()
-        );
-
-    static final List<Evaluation> QUIZ_MASTER_EVALUATIONS_OLD =
-        List.of(
-            new TotalPointsForQuizMasterEvaluation(),
-            new PointsPercentageForQuizMasterEvaluation(),
-            new Passed5CountForQuizMasterEvaluation(),
-            new Passed5PercentageForQuizMasterEvaluation(),
-            new Passed5TotalForQuizMasterEvaluation(),
-            new Passed8CountForQuizMasterEvaluation(),
-            new Passed8PercentageForQuizMasterEvaluation(),
-            new BonusForQuizMasterEvaluation()
+    static final Evaluations EVALUATIONS_OLD =
+        new Evaluations(
+            new QuizMasterEvaluations(
+                new TotalPointsForQuizMasterEvaluation(),
+                new PointsPercentageForQuizMasterEvaluation(),
+                new Passed5CountForQuizMasterEvaluation(),
+                new Passed5PercentageForQuizMasterEvaluation(),
+                new Passed5TotalForQuizMasterEvaluation(),
+                new Passed8CountForQuizMasterEvaluation(),
+                new Passed8PercentageForQuizMasterEvaluation(),
+                new BonusForQuizMasterEvaluation()
+            ),
+            new ParticipantEvaluations(
+                new TotalPointsForParticipantEvaluation(),
+                new PointsPercentageForParticipantEvaluation(),
+                new Passed5CountForParticipantEvaluation(),
+                new Passed5PercentageForParticipantEvaluation(),
+                new Passed8CountForParticipantEvaluation(),
+                new Passed8PercentageForParticipantEvaluation(),
+                new BonusForParticipantEvaluation()
+            )
         );
 
     public static void main(final String[] args)
@@ -70,15 +70,14 @@ public class Main {
         final ResultsByQuizMasterAndParticipant results = Main.computeResults(solutionsByQuizMaster, mode, options);
         final Map<String, Integer> excused =
             Main.parseExcuses(Optional.ofNullable(options.get(Flag.EXCUSES)).map(File::new));
-        final List<Evaluation> quizMasterEvaluation = Main.selectQuizMasterEvaluation(mode);
-        final List<Evaluation> participantsEvaluation = Main.selectParticipantsEvaluation(mode);
+        final Evaluations evaluations = Main.selectEvaluations(mode);
         final List<String> canceled =
             Main.parseCanceled(Optional.ofNullable(options.get(Flag.CANCELED)).map(File::new));
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(options.get(Flag.OUTPUT)))) {
-            new CSVWriter(writer).writeCSV(results, quizMasterEvaluation, participantsEvaluation, excused, canceled);
+            new CSVWriter(writer).writeCSV(results, evaluations, excused, canceled);
         }
         if (mode == ExecutionMode.FULL) {
-            Main.updateProtocols(options, results, quizMasterEvaluation, participantsEvaluation, excused, canceled);
+            Main.updateProtocols(options, results, evaluations, excused, canceled);
         }
     }
 
@@ -100,6 +99,7 @@ public class Main {
             }
         }
         return new ResultsByQuizMasterAndParticipant(
+            solutionsByQuizMaster,
             answerDataByQuizMasterAndParticipant,
             Main.selectResultComputation(mode)
         );
@@ -132,25 +132,13 @@ public class Main {
         }
     }
 
-    private static List<Evaluation> selectParticipantsEvaluation(final ExecutionMode mode) {
+    private static Evaluations selectEvaluations(final ExecutionMode mode) {
         switch (mode) {
         case OLD:
-            return Main.PARTICIPANTS_EVALUATIONS_OLD;
+            return Main.EVALUATIONS_OLD;
         case NEW:
         case FULL:
-            return Main.PARTICIPANTS_EVALUATIONS_NEW;
-        default:
-            throw new IllegalStateException("New execution mode without complete implementation detected!");
-        }
-    }
-
-    private static List<Evaluation> selectQuizMasterEvaluation(final ExecutionMode mode) {
-        switch (mode) {
-        case OLD:
-            return Main.QUIZ_MASTER_EVALUATIONS_OLD;
-        case NEW:
-        case FULL:
-            return Main.QUIZ_MASTER_EVALUATIONS_NEW;
+            return Main.EVALUATIONS_NEW;
         default:
             throw new IllegalStateException("New execution mode without complete implementation detected!");
         }
@@ -171,8 +159,7 @@ public class Main {
     private static void updateProtocols(
         final Parameters<Flag> options,
         final ResultsByQuizMasterAndParticipant results,
-        final List<Evaluation> quizMasterEvaluation,
-        final List<Evaluation> participantsEvaluation,
+        final Evaluations evaluations,
         final Map<String, Integer> excused,
         final List<String> canceled
     ) throws IOException {
@@ -189,8 +176,7 @@ public class Main {
                 new ProtocolUpdater(
                     protocol.toPath(),
                     results,
-                    quizMasterEvaluation,
-                    participantsEvaluation
+                    evaluations
                 ).updateProtocol(excused, canceled);
             }
         }

@@ -31,7 +31,12 @@ public record ResultData(ResultsByQuizMasterAndParticipant results, String name,
     }
 
     public int totalPointsInOwnQuiz() {
-        return this.results().get(this.name()).values().stream().mapToInt(Integer::intValue).sum();
+        return this.results()
+            .getOrDefault(this.name(), Collections.emptyMap())
+            .values()
+            .stream()
+            .mapToInt(Integer::intValue)
+            .sum();
     }
 
     public int totalPointsAsParticipant() {
@@ -43,7 +48,11 @@ public record ResultData(ResultsByQuizMasterAndParticipant results, String name,
 
     public double passedPercentageParticipant(final Function<ResultData, Integer> countFunction) {
         final double passedTimes100 = countFunction.apply(this) * 100;
-        return passedTimes100 / this.totalNumberOfQuizzesAsParticipant();
+        final int total = this.totalNumberOfQuizzesAsParticipant();
+        if (total == 0) {
+            return 0.0;
+        }
+        return passedTimes100 / total;
     }
 
     public double passedPercentageQuizMaster(final Function<ResultData, Integer> countFunction) {
@@ -53,7 +62,11 @@ public record ResultData(ResultsByQuizMasterAndParticipant results, String name,
             System.out.print(this.name());
             System.out.println("!");
         }
-        return passedTimes100 / this.totalNumberOfParticipantsInOwnQuiz();
+        final int total = this.totalNumberOfParticipantsInOwnQuiz();
+        if (total == 0) {
+            return 0.0;
+        }
+        return passedTimes100 / total;
     }
 
     private Stream<Map.Entry<String, Map<String, Integer>>> getUncanceledOtherQuizData() {
