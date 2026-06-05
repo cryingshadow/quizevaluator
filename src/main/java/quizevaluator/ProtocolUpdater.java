@@ -8,6 +8,13 @@ import quizevaluator.evaluations.*;
 
 public class ProtocolUpdater {
 
+    private static String formatPercentage(final double percentage) {
+        if ((percentage % 1) == 0) {
+            return String.valueOf((int)percentage);
+        }
+        return String.format(Locale.US, "%.1f", percentage);
+    }
+
     private static String parseStudent(final List<String> content) {
         for (final String line : content) {
             if (line.startsWith("\\newcommand{\\student}{")) {
@@ -48,6 +55,8 @@ public class ProtocolUpdater {
         final int bonusQuizMaster1 = quizMasterBonus.bonus1().apply(resultData);
         final int bonusQuizMaster2 = quizMasterBonus.bonus2().apply(resultData);
         final int bonusQuizMaster3 = quizMasterBonus.bonus3().apply(resultData);
+        final int pointsParticipant = this.evaluations.participantEvaluations().pointsTotal().apply(resultData);
+        final String participantPassedPercentage = this.calculateParticipantPassedPercentage(resultData);
         final int bonusParticipant1 = participantBonus.bonus1().apply(resultData);
         final int bonusParticipant2 = participantBonus.bonus2().apply(resultData);
         final int bonusParticipant3 = participantBonus.bonus3().apply(resultData);
@@ -66,6 +75,11 @@ public class ProtocolUpdater {
                 case "\\quizbonusiii{}":
                     writer.write(String.format("\\quizbonusiii{%d}", bonusQuizMaster3));
                     break;
+                case "\\quizparticipantstats{}{}":
+                    writer.write(
+                        String.format("\\quizparticipantstats{%d}{%s}", pointsParticipant, participantPassedPercentage)
+                    );
+                    break;
                 case "\\quizparticipantbonusi{}":
                     writer.write(String.format("\\quizparticipantbonusi{%d}", bonusParticipant1));
                     break;
@@ -83,13 +97,16 @@ public class ProtocolUpdater {
         }
     }
 
+    private String calculateParticipantPassedPercentage(final ResultData resultData) {
+        return ProtocolUpdater.formatPercentage(
+            resultData.passedPercentageParticipant(this.evaluations.participantEvaluations().passedCount())
+        );
+    }
+
     private String calculatePassedPercentage(final ResultData resultData) {
-        final double percentage =
-            resultData.passedPercentageQuizMaster(this.evaluations.quizMasterEvaluations().passedCount());
-        if ((percentage % 1) == 0) {
-            return String.valueOf((int)percentage);
-        }
-        return String.format(Locale.US, "%.1f", percentage);
+        return ProtocolUpdater.formatPercentage(
+            resultData.passedPercentageQuizMaster(this.evaluations.quizMasterEvaluations().passedCount())
+        );
     }
 
 }
