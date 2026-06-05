@@ -6,7 +6,7 @@ public enum Flag implements Parameter {
 
     ANSWERS("a", "answers", "Folder containing the quiz participants' answers."),
 
-    CANCELED("c", "canceled", "Number of canceled quizzes."),
+    CANCELED("c", "canceled", "File containing the list of quiz masters who's quizzes are canceled."),
 
     EXCUSES("e", "excuses", "File containing the number of excused quizzes for each participant."),
 
@@ -14,7 +14,7 @@ public enum Flag implements Parameter {
 
     OUTPUT("o", "output", "File for output."),
 
-    SOLUTIONS("s", "solutions", "File containing the correct solutions fpr the quizzes.");
+    SOLUTIONS("s", "solutions", "File containing the correct solutions for the quizzes.");
 
     private final String description;
 
