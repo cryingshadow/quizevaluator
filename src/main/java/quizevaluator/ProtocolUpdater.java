@@ -19,7 +19,7 @@ public class ProtocolUpdater {
         for (final String line : content) {
             if (line.startsWith("\\newcommand{\\student}{")) {
                 final String nameAndBrace = line.substring(22);
-                return nameAndBrace.substring(0, nameAndBrace.length() - 1);
+                return Main.toASCII(nameAndBrace.substring(0, nameAndBrace.length() - 1));
             }
         }
         return null;

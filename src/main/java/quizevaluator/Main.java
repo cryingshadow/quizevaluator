@@ -81,6 +81,22 @@ public class Main {
         }
     }
 
+    public static String toASCII(final String name) {
+        return name
+            .replaceAll("ä", "ae")
+            .replaceAll("Ä", "Ae")
+            .replaceAll("ö", "oe")
+            .replaceAll("Ö", "Oe")
+            .replaceAll("ü", "ue")
+            .replaceAll("Ü", "Ue")
+            .replaceAll("ß", "ss")
+            .replaceAll("Á", "A")
+            .replaceAll("á", "a")
+            .replaceAll("É", "E")
+            .replaceAll("é", "e")
+            .replaceAll("[^\\x00-\\x7F]", "");
+    }
+
     private static ResultsByQuizMasterAndParticipant computeResults(
         final SolutionsByQuizMaster solutionsByQuizMaster,
         final ExecutionMode mode,
@@ -112,6 +128,7 @@ public class Main {
         return Files
             .lines(file.get().toPath())
             .filter(line -> !line.isBlank())
+            .map(Main::toASCII)
             .toList();
     }
 
@@ -123,7 +140,7 @@ public class Main {
             .lines(file.get().toPath())
             .filter(line -> !line.isBlank())
             .map(line -> line.split(";"))
-            .collect(Collectors.toMap(split -> split[0], split -> Integer.parseInt(split[1])));
+            .collect(Collectors.toMap(split -> Main.toASCII(split[0]), split -> Integer.parseInt(split[1])));
     }
 
     private static SolutionsByQuizMaster parseSolutions(final String file) throws IOException {

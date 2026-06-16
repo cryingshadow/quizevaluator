@@ -32,7 +32,7 @@ public class FormsExcelToCsvConverter {
      * @throws IOException
      */
     public static File convertToCSV(final File formsResultsExcelFile) throws IOException {
-        final String quizAuthor = FormsExcelToCsvConverter.extractQuizAuthor(formsResultsExcelFile);
+        final String quizAuthor = Main.toASCII(FormsExcelToCsvConverter.extractQuizAuthor(formsResultsExcelFile));
         final File targetFile = File.createTempFile(quizAuthor, ".csv");
         targetFile.deleteOnExit();
         final List<String> lines = new ArrayList<>();

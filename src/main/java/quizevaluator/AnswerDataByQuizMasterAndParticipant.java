@@ -29,7 +29,7 @@ public class AnswerDataByQuizMasterAndParticipant extends LinkedHashMap<String, 
         final BufferedReader reader,
         final SolutionsByQuizMaster solutionsByQuizMaster
     ) throws IOException {
-        final String quizMaster = reader.readLine().trim();
+        final String quizMaster = Main.toASCII(reader.readLine().trim());
         final Map<String, AnswerData> answerDataByParticipant = new LinkedHashMap<String, AnswerData>();
         String line = reader.readLine();
         while (line != null) {
@@ -51,7 +51,7 @@ public class AnswerDataByQuizMasterAndParticipant extends LinkedHashMap<String, 
                 }
             }
             answerDataByParticipant.put(
-                participantAndAnswerText[0],
+                Main.toASCII(participantAndAnswerText[0]),
                 answer.toAnswerData(solutionsByQuizMaster.get(quizMaster))
             );
             line = reader.readLine();
