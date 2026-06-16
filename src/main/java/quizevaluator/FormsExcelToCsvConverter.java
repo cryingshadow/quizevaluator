@@ -12,6 +12,11 @@ public class FormsExcelToCsvConverter {
 
     private static final int ANSWER_COLUMNS_OFFSET = 6;
 
+    private static final Pattern DEFAULT_FORMS_NAME_PATTERN =
+        Pattern.compile("Multiple-Choice-Quiz zum Thema ((\\w|\\s)+)\\(.*");
+
+    private static final Pattern NAME_PATTERN = Pattern.compile("\\[[^\\]]+\\]");
+
     private static final int NR_OF_ANSWER_COLUMNS = 10;
 
     private static final int PARTICIPANT_COLUMN = 4;
@@ -56,13 +61,15 @@ public class FormsExcelToCsvConverter {
 
     private static String extractQuizAuthor(final File formsResultsExcelFile) throws IOException {
         final String filename = formsResultsExcelFile.getName();
-        final Pattern defaultFormsNamePattern = Pattern.compile("Multiple-Choice-Quiz zum Thema ((\\w|\\s)+)\\(.*");
-        final Matcher defaultFormsNameMatcher = defaultFormsNamePattern.matcher(filename);
+        final Matcher defaultFormsNameMatcher = FormsExcelToCsvConverter.DEFAULT_FORMS_NAME_PATTERN.matcher(filename);
+        final Matcher nameMatcher = FormsExcelToCsvConverter.NAME_PATTERN.matcher(filename);
         if (defaultFormsNameMatcher.matches()) {
             return FormsExcelToCsvConverter.findQuizAuthorByTopic(
                 defaultFormsNameMatcher.group(1),
                 formsResultsExcelFile
             );
+        } else if (nameMatcher.find()) {
+            return filename.substring(nameMatcher.start() + 1, nameMatcher.end() - 1).replaceAll("_", " ");
         } else if (filename.matches("[^_]+_.+")) {
             return filename.substring(0, filename.indexOf('_'));
         }
